@@ -1,0 +1,5 @@
+package com.aws.factory;
+
+public class AWSClientFactory {
+
+}

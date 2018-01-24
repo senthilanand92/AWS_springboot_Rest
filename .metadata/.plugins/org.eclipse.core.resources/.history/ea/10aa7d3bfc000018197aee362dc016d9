@@ -1,0 +1,101 @@
+package com.example.demo.Controller;
+
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.aws.managers.AWSManagerDAO;
+import com.aws.models.Employee;
+
+
+@RestController
+@RequestMapping("/RestServices")
+public class MyRestController {
+	    
+	    @Autowired
+	    AWSManagerDAO awsManagerDAO;
+
+
+	    
+	 //Code to get Employee using Query param 
+	@GetMapping("/getEmployee")
+	public Employee getCustomers(@RequestParam(value="empid", required=false, defaultValue="Stranger") int empID) {
+		 return awsManagerDAO.readEmployee(empID);
+	}
+  
+	
+	//Code to get Employee using path variable
+	@GetMapping("/Employees/{id}")
+	public ResponseEntity getEmployee(@PathVariable("id") int empID) {
+       
+	
+		Employee employee = awsManagerDAO.readEmployee(empID);
+		if (employee == null) {
+			return new ResponseEntity("No Employee found for ID " + empID, HttpStatus.NOT_FOUND);
+		}
+
+		return new ResponseEntity(employee, HttpStatus.OK);
+	}
+
+	//Code to insert employee to table
+	@PostMapping(value = "/customers")
+	public ResponseEntity createCustomer(@RequestBody  Employee employee) {
+
+		Employee employeeResult =null;
+		employeeResult=awsManagerDAO.AddEmployee(employee);
+		if(null == employeeResult){
+			return new ResponseEntity("Insertion failed for employee" + empID, HttpStatus.NOT_FOUND);
+		}
+
+		return new ResponseEntity(employeeResult, HttpStatus.OK);
+	}
+
+	
+	
+	@DeleteMapping("/Employees/{id}")
+	public ResponseEntity deleteCustomer(@PathVariable int empID) {
+		Employee employee =awsManagerDAO.DeleteEmployee(empID);
+		if (null ==  employee) {
+			return new ResponseEntity("No Employee found for ID " + empID, HttpStatus.NOT_FOUND);
+		}
+
+		return new ResponseEntity("Employee Deleted.\n Details\n"+employee.toString(), HttpStatus.OK);
+
+	}
+	
+	@PutMapping("/Employees/{id}")
+	public ResponseEntity updateCustomer(@PathVariable int id, @RequestBody Employee employee) {
+          
+		Employee employeeResult = awsManagerDAO.UpdateEmployee(id, employee);
+
+		if (null == employeeResult) {
+			return new ResponseEntity("No Employee found for ID " + id, HttpStatus.NOT_FOUND);
+		}
+
+		return new ResponseEntity("Employee updated.\n Details\n"+employeeResult.toString(), HttpStatus.OK);
+	}
+
+
+	
+//    @RequestMapping(method=RequestMethod.GET)
+//    public @ResponseBody Employee sayHello(@RequestParam(value="name", required=false, defaultValue="Stranger") String name) {
+//        return new Employee(counter.incrementAndGet(), String.format(template, name));
+//    }
+
+
+
+}

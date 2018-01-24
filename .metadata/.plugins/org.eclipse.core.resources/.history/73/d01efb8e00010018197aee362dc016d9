@@ -1,0 +1,5 @@
+package com.aws.models;
+
+public class Greeting {
+
+}

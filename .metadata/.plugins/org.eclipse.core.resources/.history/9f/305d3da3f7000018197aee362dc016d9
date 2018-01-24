@@ -1,0 +1,78 @@
+package com.example.demo.Controller;
+
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.demo.model.Employee;
+
+@RestController
+@RequestMapping("/RestServices")
+public class MyRestController {
+	  private static final String template = "Hello, %s!";
+	    private final AtomicLong counter = new AtomicLong();
+
+
+	@GetMapping("/getEmployee")
+	public Employee getCustomers(@RequestParam(value="name", required=false, defaultValue="Stranger") String name) {
+		 return new Employee(counter.incrementAndGet(), String.format(template, name));
+	}
+  
+	@GetMapping("/Employees/{id}")
+	public ResponseEntity getCustomer(@PathVariable("id") Long id) {
+       
+		
+		//TODO
+		Customer customer = customerDAO.get(id);
+		if (customer == null) {
+			return new ResponseEntity("No Customer found for ID " + id, HttpStatus.NOT_FOUND);
+		}
+
+		return new ResponseEntity(customer, HttpStatus.OK);
+	}
+
+	@DeleteMapping("/Employees/{id}")
+	public ResponseEntity deleteCustomer(@PathVariable Long id) {
+
+		if (null == customerDAO.delete(id)) {
+			return new ResponseEntity("No Customer found for ID " + id, HttpStatus.NOT_FOUND);
+		}
+
+		return new ResponseEntity(id, HttpStatus.OK);
+
+	}
+	
+	@PutMapping("/customers/{id}")
+	public ResponseEntity updateCustomer(@PathVariable Long id, @RequestBody Employee employee) {
+          
+		//customer = customerDAO.update(id, customer);
+
+		if (null == employee) {
+			return new ResponseEntity("No Employee found for ID " + id, HttpStatus.NOT_FOUND);
+		}
+
+		return new ResponseEntity(employee, HttpStatus.OK);
+	}
+
+
+	
+    @RequestMapping(method=RequestMethod.GET)
+    public @ResponseBody Employee sayHello(@RequestParam(value="name", required=false, defaultValue="Stranger") String name) {
+        return new Employee(counter.incrementAndGet(), String.format(template, name));
+    }
+
+
+
+}

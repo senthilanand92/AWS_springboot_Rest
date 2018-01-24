@@ -1,0 +1,210 @@
+package com.example.demo.Controller;
+
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
+import com.aws.managers.AWSManagerDAO;
+import com.aws.models.Employee;
+
+
+@RestController
+@RequestMapping("/RestServices")
+public class MyRestController {
+	    
+	    @Autowired
+	    AWSManagerDAO awsManagerDAO;
+
+
+	    
+	 //Code to get Employee using Query param 
+	@GetMapping("/getEmployees")
+	public ResponseEntity getCustomers(@RequestParam(value="empid", required=false, defaultValue="Stranger") int empID) {
+		try {
+		return new ResponseEntity(awsManagerDAO.readEmployee(empID),HttpStatus.OK);
+		}
+		catch (AmazonServiceException ase) {
+	        System.out.println("Caught an AmazonServiceException, which means your request made it "
+	                + "to Amazon S3, but was rejected with an error response for some reason.");
+	        System.out.println("Error Message:    " + ase.getMessage());
+	        System.out.println("HTTP Status Code: " + ase.getStatusCode());
+	        System.out.println("AWS Error Code:   " + ase.getErrorCode());
+	        System.out.println("Error Type:       " + ase.getErrorType());
+	        System.out.println("Request ID:       " + ase.getRequestId());
+	        return new ResponseEntity("AWS Exception occurred", HttpStatus.EXPECTATION_FAILED);
+	    } catch (AmazonClientException ace) {
+	        System.out.println("Caught an AmazonClientException, which means the client encountered "
+	                + "a serious internal problem while trying to communicate with S3, "
+	                + "such as not being able to access the network.");
+	        System.out.println("Error Message: " + ace.getMessage());
+	        ace.printStackTrace();
+	        return new ResponseEntity("AWS Exception occurred", HttpStatus.EXPECTATION_FAILED);
+	    }
+	}
+  
+	
+	
+
+	//Code to get Employee using path variable
+	@GetMapping("/getEmployee/{id}")
+	public ResponseEntity getEmployee(@PathVariable("id") int empID) {
+       try {
+	
+		Employee employee = awsManagerDAO.readEmployee(empID);
+		if (employee == null) {
+			return new ResponseEntity("No Employee found for ID " + empID, HttpStatus.NOT_FOUND);
+		}
+
+		return new ResponseEntity(employee, HttpStatus.OK);
+       }
+       catch (AmazonServiceException ase) {
+	        System.out.println("Caught an AmazonServiceException, which means your request made it "
+	                + "to Amazon S3, but was rejected with an error response for some reason.");
+	        System.out.println("Error Message:    " + ase.getMessage());
+	        System.out.println("HTTP Status Code: " + ase.getStatusCode());
+	        System.out.println("AWS Error Code:   " + ase.getErrorCode());
+	        System.out.println("Error Type:       " + ase.getErrorType());
+	        System.out.println("Request ID:       " + ase.getRequestId());
+	        return new ResponseEntity("AWS Exception occurred", HttpStatus.EXPECTATION_FAILED);
+	    } catch (AmazonClientException ace) {
+	        System.out.println("Caught an AmazonClientException, which means the client encountered "
+	                + "a serious internal problem while trying to communicate with S3, "
+	                + "such as not being able to access the network.");
+	        System.out.println("Error Message: " + ace.getMessage());
+	        ace.printStackTrace();
+	        return new ResponseEntity("AWS Exception occurred", HttpStatus.EXPECTATION_FAILED);
+	    }
+	}
+
+	//Code to insert employee to table
+	@PostMapping(value = "/Employees")
+	public ResponseEntity createCustomer(@RequestBody  Employee employee) {
+		try {
+
+		Employee employeeResult =null;
+		employeeResult=awsManagerDAO.AddEmployee(employee);
+		if(null == employeeResult){
+			return new ResponseEntity("Insertion failed for employee" + employee.getEmpID(), HttpStatus.EXPECTATION_FAILED);
+		}
+
+		return new ResponseEntity(employeeResult, HttpStatus.OK);
+		}
+		catch (AmazonServiceException ase) {
+	        System.out.println("Caught an AmazonServiceException, which means your request made it "
+	                + "to Amazon S3, but was rejected with an error response for some reason.");
+	        System.out.println("Error Message:    " + ase.getMessage());
+	        System.out.println("HTTP Status Code: " + ase.getStatusCode());
+	        System.out.println("AWS Error Code:   " + ase.getErrorCode());
+	        System.out.println("Error Type:       " + ase.getErrorType());
+	        System.out.println("Request ID:       " + ase.getRequestId());
+	        return new ResponseEntity("AWS Exception occurred", HttpStatus.EXPECTATION_FAILED);
+	    } catch (AmazonClientException ace) {
+	        System.out.println("Caught an AmazonClientException, which means the client encountered "
+	                + "a serious internal problem while trying to communicate with S3, "
+	                + "such as not being able to access the network.");
+	        System.out.println("Error Message: " + ace.getMessage());
+	        ace.printStackTrace();
+	        return new ResponseEntity("AWS Exception occurred", HttpStatus.EXPECTATION_FAILED);
+	    }
+	}
+
+	
+	
+	@DeleteMapping("/Employees/{id}")
+	public ResponseEntity deleteCustomer(@PathVariable int empID) {
+		try {
+		Employee employee =awsManagerDAO.DeleteEmployee(empID);
+		if (null ==  employee) {
+			return new ResponseEntity("No Employee found for ID " + empID, HttpStatus.NOT_FOUND);
+		}
+
+		return new ResponseEntity("Employee Deleted.\n Details\n"+employee.toString(), HttpStatus.OK);
+		}
+		catch (AmazonServiceException ase) {
+	        System.out.println("Caught an AmazonServiceException, which means your request made it "
+	                + "to Amazon S3, but was rejected with an error response for some reason.");
+	        System.out.println("Error Message:    " + ase.getMessage());
+	        System.out.println("HTTP Status Code: " + ase.getStatusCode());
+	        System.out.println("AWS Error Code:   " + ase.getErrorCode());
+	        System.out.println("Error Type:       " + ase.getErrorType());
+	        System.out.println("Request ID:       " + ase.getRequestId());
+	        return new ResponseEntity("AWS Exception occurred", HttpStatus.EXPECTATION_FAILED);
+	    } catch (AmazonClientException ace) {
+	        System.out.println("Caught an AmazonClientException, which means the client encountered "
+	                + "a serious internal problem while trying to communicate with S3, "
+	                + "such as not being able to access the network.");
+	        System.out.println("Error Message: " + ace.getMessage());
+	        ace.printStackTrace();
+	        return new ResponseEntity("AWS Exception occurred", HttpStatus.EXPECTATION_FAILED);
+	    }
+		
+
+	}
+	
+	@PutMapping("/Employees/{id}")
+	public ResponseEntity updateCustomer(@PathVariable int id, @RequestBody Employee employee) {
+		try {
+          
+		Employee employeeResult = awsManagerDAO.UpdateEmployee(id, employee);
+
+		if (null == employeeResult) {
+			return new ResponseEntity("No Employee found for ID " + id, HttpStatus.NOT_FOUND);
+		}
+
+		return new ResponseEntity("Employee updated.\n Details\n"+employeeResult.toString(), HttpStatus.OK);
+		}
+		catch (AmazonServiceException ase) {
+	        System.out.println("Caught an AmazonServiceException, which means your request made it "
+	                + "to Amazon S3, but was rejected with an error response for some reason.");
+	        System.out.println("Error Message:    " + ase.getMessage());
+	        System.out.println("HTTP Status Code: " + ase.getStatusCode());
+	        System.out.println("AWS Error Code:   " + ase.getErrorCode());
+	        System.out.println("Error Type:       " + ase.getErrorType());
+	        System.out.println("Request ID:       " + ase.getRequestId());
+	        return new ResponseEntity("AWS Exception occurred", HttpStatus.EXPECTATION_FAILED);
+	    } catch (AmazonClientException ace) {
+	        System.out.println("Caught an AmazonClientException, which means the client encountered "
+	                + "a serious internal problem while trying to communicate with S3, "
+	                + "such as not being able to access the network.");
+	        System.out.println("Error Message: " + ace.getMessage());
+	        ace.printStackTrace();
+	        return new ResponseEntity("AWS Exception occurred", HttpStatus.EXPECTATION_FAILED);
+	    }
+	}
+
+
+	
+	public AWSManagerDAO getAwsManagerDAO() {
+		return awsManagerDAO;
+	}
+
+
+	public void setAwsManagerDAO(AWSManagerDAO awsManagerDAO) {
+		this.awsManagerDAO = awsManagerDAO;
+	}
+
+	
+//    @RequestMapping(method=RequestMethod.GET)
+//    public @ResponseBody Employee sayHello(@RequestParam(value="name", required=false, defaultValue="Stranger") String name) {
+//        return new Employee(counter.incrementAndGet(), String.format(template, name));
+//    }
+
+
+
+}
